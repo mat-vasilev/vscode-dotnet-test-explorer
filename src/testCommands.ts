@@ -251,12 +251,15 @@ export class TestCommands implements Disposable {
         return new Promise((resolve, reject) => {
             const testResultFile = path.join(this.testResultsFolder, trxTestName);
             let command = `dotnet test${Utility.additionalArgumentsOption} --no-build --logger \"trx;LogFileName=${testResultFile}\"`;
+            const fullyQualifiedTestName = testName.replace(/\(.*\)/g, "");
 
             if (testName && testName.length) {
                 if (isSingleTest) {
-                    command = command + ` --filter "FullyQualifiedName=${testName.replace(/\(.*\)/g, "")}"`;
+                    const testMethodName = fullyQualifiedTestName.substr(fullyQualifiedTestName.lastIndexOf('.') + 1, fullyQualifiedTestName.length);
+                    const testClassName = fullyQualifiedTestName.substr(0, fullyQualifiedTestName.length - testMethodName.length - 1);
+                    command = command + ` --filter "ClassName=${testClassName}&Name=${testMethodName}"`;
                 } else {
-                    command = command + ` --filter "FullyQualifiedName~${testName.replace(/\(.*\)/g, "")}"`;
+                    command = command + ` --filter "FullyQualifiedName~${fullyQualifiedTestName}"`;
                 }
             }
 
